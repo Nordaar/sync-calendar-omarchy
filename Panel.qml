@@ -675,6 +675,14 @@ Panel {
     onFileChanged: root.syncCalendars(true)
   }
 
+  // Nothing else reads the event cache until the panel is opened or the
+  // sync timer fires, so after a shell restart the bar's next-event label
+  // stayed empty. Load the cache immediately and kick a background refresh.
+  Component.onCompleted: {
+    eventsFile.reload()
+    root.syncCalendars(false)
+  }
+
   Process {
     id: fetchProc
     command: ["python3", Qt.resolvedUrl("fetch-events.py").toString().replace(/^file:\/\//, "")]
