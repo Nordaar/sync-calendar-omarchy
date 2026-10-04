@@ -375,6 +375,13 @@ function stepToWeekBound(dateKeyStr, bound, weekStart) {
   return stepDate(dateKeyStr, delta)
 }
 
+// Lists read out of QML-backed settings can arrive as QVariantList proxies:
+// array-like, with constructor.name "Array", yet Array.isArray() says no.
+// Treat any object carrying a numeric length as a list.
+function isList(value) {
+  return !!value && typeof value === "object" && typeof value.length === "number"
+}
+
 // The next timed event still running or yet to start, looking ahead from
 // today over `horizonDays` days (1 = today only, 0 = as far as the cache
 // goes). `calendarNames` is a strict allowlist: only events from the named
@@ -395,7 +402,7 @@ function nextUpcomingEvent(eventsByDate, now, horizonDays, calendarNames) {
   if (span > 0) {
     maxKey = keyForDate(new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate() + Math.floor(span) - 1))
   }
-  var allow = Array.isArray(calendarNames) ? calendarNames : []
+  var allow = isList(calendarNames) ? calendarNames : []
 
   var keys = Object.keys(days).sort()
   var best = null
@@ -692,6 +699,7 @@ if (typeof module !== "undefined") {
     isoWeekLiteral: isoWeekLiteral,
     parseEventsFile: parseEventsFile,
     nextUpcomingEvent: nextUpcomingEvent,
+    isList: isList,
     nextEventHorizonDays: nextEventHorizonDays,
     formatEventCountdown: formatEventCountdown,
     truncateEventTitle: truncateEventTitle,
